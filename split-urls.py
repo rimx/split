@@ -4,6 +4,10 @@ import math
 from datetime import datetime
 
 startTime = datetime.now()
+
+domains = {
+  'uk_division_web_live':'https://www.statravel.co.uk'
+}
 #read 2 params
 if len(sys.argv) < 3:
   print("Please pass the project folder as param1 and redirect file as param2")
@@ -57,13 +61,35 @@ else:
   # url doesn't exist in the project -> delete them 
 
   for path in lines:
+    
     if path[-4:] != '.htm':
       redirect_in_zxtm.add(path)
     elif path in pages:
       redirect_in_cms.add(path)
     else:
-      delete_from_project.add(path)
- 
+      #delete_from_project.add(path)
+      domain = domains[project]
+      session = requests.Session()
+      session.max_redirects = 5
+      session.timeout = 5
+      url = domain + '/' + path.rstrip()
+      print(url);
+      csv_line="";
+      try:
+        response = session.head(url)
+        if response.history:
+          # loop through the history
+          for resp in response.history:
+            csv_line+= resp.url + "("+str(resp.status_code) + ");"
+          # final destination
+          csv_line+= response.url + "("+str(response.status_code) + ");"
+        else:
+          csv_line+= response.url + "("+str(response.status_code) + ")"
+        #add the line to set  
+        delete_from_project.add(csv_line.rstrip(";"))
+      except requests.exceptions.RequestException as e:
+        r = e.response
+        print (r)
   redirect_in_zxtm_headline = '*'*72 + "\n Can be redirected in ZXTM \n" + " Total Pages : " + str(len(redirect_in_zxtm)) + "\n" +  '*'*72 + "\n"
   redirect_in_cms_headline = '*'*72 + "\n Can be redirected in CMS \n" + " Total Pages : " + str(len(redirect_in_cms)) + "\n" +  '*'*72 + "\n"
   delete_from_project_headline = '*'*72 + "\n Can be deleted in CMS \n" + " Total Pages : " + str(len(delete_from_project)) + "\n" +  '*'*72 + "\n"
