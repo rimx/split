@@ -72,11 +72,12 @@ else:
       session = requests.Session()
       session.max_redirects = 5
       session.timeout = 5
+      headers = {'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0'}
       url = domain + '/' + path.rstrip()
       print(url);
       csv_line="";
       try:
-        response = session.head(url)
+        response = session.get(url, headers = headers)
         if response.history:
           # loop through the history
           for resp in response.history:
