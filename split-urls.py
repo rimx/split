@@ -6,7 +6,8 @@ from datetime import datetime
 startTime = datetime.now()
 
 domains = {
-  'uk_division_web_live':'https://www.statravel.co.uk'
+  'uk_division_web_live':'https://www.statravel.co.uk', 
+  'de_division_web_live': 'https://www.statravel.de'
 }
 #read 2 params
 if len(sys.argv) < 3:
@@ -16,7 +17,7 @@ if len(sys.argv) < 3:
 else:
   project = sys.argv[1] 
   redirect = sys.argv[2]
-
+  domain = domains[project]
   # Get the urls from the API
   api = "http://s607650rgvl190.bluee.net:8080/cps/rde/rest/v1/project/"+project+"/contents?group=content&type=HTML&sortorder=asc&sortedby=changed&chunksize=250&chunk="
   print ("Start crawling URL's from "+ api +" ...")
@@ -38,6 +39,12 @@ else:
   # now we have all the pages with .htm in DS
   # lets check the files in the redirect file 
   print ("Done with crawling ...")
+  # Update : 17.04:2018
+  # save all get urls
+  with open('gets_urls.txt', 'w') as f:
+    for p in pages:
+      f.write(domain + '/' + p + "\n")
+  quit()
   print ("Opening the file "+ redirect +" ...")
   lines = set()
   with open(redirect) as f:
@@ -68,7 +75,6 @@ else:
       redirect_in_cms.add(path)
     else:
       #delete_from_project.add(path)
-      domain = domains[project]
       session = requests.Session()
       session.max_redirects = 5
       session.timeout = 5
